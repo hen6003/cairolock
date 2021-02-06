@@ -184,15 +184,11 @@ int main(int argc, char **argv)
   int key_event;
   int input_len;
   char user[32] = "";
-  char * custom_text = "";
+  char * custom_text = "Enter Password";
   register struct passwd *pw;
   register uid_t uid;
 
   srand(time(0));
-  double x0 = rand_num(1,1919), y0 = rand_num(1,1079), x1 = rand_num(1,1919),
-         y1 = rand_num(1,1079), x2 = rand_num(1,1919), y2 = rand_num(1,1079); //TODO: adapt to screen size
-  double dx0 = 1, dx1 = 1.5, dx2 = 2;
-  double dy0 = 2, dy1 = 1.5, dy2 = 1;
   unsigned int running, login_failure = 0;
 
   for (optind = 1; optind < argc && argv[optind][0] == '-'; optind++)
@@ -214,12 +210,13 @@ int main(int argc, char **argv)
                             "Try '%s -h' for more information\n", argv[0]);
             exit(2);
           }
+
           break;
 
         case 'h':
           printf("Usage: %s [OPTION]\n"
                  "Lock the screen until users password is inputted\n\n"
-                 "  -d        do not lockscreen\n"
+                 "  -d        do not lock the screen, will still use screen size for triangle\n"
                  "  -t [TEXT] display custom text\n"
                  "  -h        show this help\n", argv[0]);
           exit(0);
@@ -244,6 +241,12 @@ int main(int argc, char **argv)
   x = y = 0;
   sfc = cairo_create_x11_surface(&x, &y);
   ctx = cairo_create(sfc);
+  
+  double x0 = rand_num(1,x-1), y0 = rand_num(1,y-1), x1 = rand_num(1,x-1),
+         y1 = rand_num(1,y-1), x2 = rand_num(1,x-1), y2 = rand_num(1,y-1); //TODO: adapt to screen size
+
+  double dx0 = 1, dx1 = 1.5, dx2 = 2;
+  double dy0 = 2, dy1 = 1.5, dy2 = 1;
 
   for (running = 1; running;)
   {
@@ -343,4 +346,3 @@ int main(int argc, char **argv)
 
   return 0;
 }
-
