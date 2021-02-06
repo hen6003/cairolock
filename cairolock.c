@@ -12,6 +12,9 @@
 #include <ctype.h>
 #include <pwd.h>
 
+char passwd_buf[20] = "";
+int override_redirect = 1;
+
 int cairo_check_event(cairo_surface_t *sfc, int block)
 {
   char keybuf[8];
@@ -45,7 +48,7 @@ cairo_surface_t *cairo_create_x11_surface(int *x, int *y)
   int screen;
   cairo_surface_t *sfc;
   XSetWindowAttributes wa;
-  wa.override_redirect = 1;
+  wa.override_redirect = override_redirect;
 
   if ((dsp = XOpenDisplay(NULL)) == NULL)
     exit(1);
@@ -69,7 +72,9 @@ cairo_surface_t *cairo_create_x11_surface(int *x, int *y)
   XFreeCursor(dsp, invisibleCursor);
   XFreePixmap(dsp, bitmapNoData);
 
-  XGrabKeyboard(dsp, root, True, GrabModeAsync, GrabModeAsync, CurrentTime);
+  if (override_redirect)
+    XGrabKeyboard(dsp, root, True, GrabModeAsync, GrabModeAsync, CurrentTime);
+
   XSelectInput(dsp, da, ButtonPressMask | KeyPressMask);
   XMapWindow(dsp, da);
 
@@ -98,8 +103,6 @@ int rand_num(int min, int max)
   int n = rand() % max + min;
   return n;
 }
-
-char passwd_buf[20] = "";
 
 /* for pam conversation */
 int conversation(int num_msg, const struct pam_message **msg,
@@ -175,12 +178,13 @@ int check_pam(char * user)
 int main(int argc, char **argv)
 {
   cairo_surface_t *sfc;
-  cairo_t *ctx;
+  cairo_t * ctx;
   int x, y;
   struct timespec ts = {0, 5000000};
   int key_event;
   int input_len;
   char user[32] = "";
+  char * custom_text = "";
   register struct passwd *pw;
   register uid_t uid;
 
@@ -190,6 +194,48 @@ int main(int argc, char **argv)
   double dx0 = 1, dx1 = 1.5, dx2 = 2;
   double dy0 = 2, dy1 = 1.5, dy2 = 1;
   unsigned int running, login_failure = 0;
+
+  for (optind = 1; optind < argc && argv[optind][0] == '-'; optind++)
+  {
+    for (int i = 1; i < strlen(argv[optind]); i++)
+    {
+    switch (argv[optind][i])
+      {
+        case 'd':
+          override_redirect = 0;
+          break;
+
+        case 't':
+          custom_text = &argv[optind+1][0];
+
+          if (custom_text == NULL)
+          {
+            fprintf(stderr, "No argument given for -t\n"
+                            "Try '%s -h' for more information\n", argv[0]);
+            exit(2);
+          }
+          break;
+
+        case 'h':
+          printf("Usage: %s [OPTION]\n"
+                 "Lock the screen until users password is inputted\n\n"
+                 "  -d        do not lockscreen\n"
+                 "  -t [TEXT] display custom text\n"
+                 "  -h        show this help\n", argv[0]);
+          exit(0);
+          break;
+        
+        default:
+          if (argv[optind][0] != '-')
+            break;
+
+          fprintf(stderr, "Unknown argument: %c\n"
+                          "Try '%s -h' for more information\n", argv[optind][i], argv[0]);
+          exit(1);
+          break;
+      }
+    }
+  }
   
   uid = geteuid();
   pw = getpwuid(uid);
@@ -232,6 +278,13 @@ int main(int argc, char **argv)
 
     cairo_set_source_rgb(ctx, 1, 1, 1);
     cairo_set_font_size(ctx, 20); 
+    
+    if (strcmp(custom_text, ""))
+    {
+      cairo_move_to(ctx, 20, 40);
+      cairo_show_text(ctx, custom_text);
+    }
+
     cairo_move_to(ctx, 100, 100);
     cairo_show_text(ctx, passwd_buf);
 
