@@ -187,7 +187,8 @@ int main(int argc, char **argv)
   register uid_t uid;
 
   srand(time(0));
-  double x0 = rand_num(1,1919), y0 = rand_num(1,1079), x1 = rand_num(1,1919), y1 = rand_num(1,1079), x2 = rand_num(1,1919), y2 = rand_num(1,1079);
+  double x0 = rand_num(1,1919), y0 = rand_num(1,1079), x1 = rand_num(1,1919),
+         y1 = rand_num(1,1079), x2 = rand_num(1,1919), y2 = rand_num(1,1079); //TODO: adapt to screen size
   double dx0 = 1, dx1 = 1.5, dx2 = 2;
   double dy0 = 2, dy1 = 1.5, dy2 = 1;
   int running, login_failure = 0;
@@ -271,7 +272,7 @@ int main(int argc, char **argv)
 
       case 0xff0d:
         if (check_pam(user))
-          login_failure = 500;
+          login_failure = 500; // the bigger the number the longer it shows
         else
           running = 0;
         strcpy(passwd_buf, "");
