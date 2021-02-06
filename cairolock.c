@@ -1,5 +1,4 @@
 #include <X11/Xlib.h>
-#include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <cairo/cairo.h>
 #include <cairo/cairo-xlib.h>
@@ -10,7 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <string.h>
 #include <ctype.h>
 #include <pwd.h>
 
@@ -143,7 +141,7 @@ static struct pam_conv conv = {
 int check_pam(char * user)
 {
   pam_handle_t *handle = NULL;
-  const char *service_name = "pam_example";
+  const char *service_name = "cairolock";
   int retval;
 
   retval = pam_start(service_name, NULL, &conv,
@@ -191,7 +189,7 @@ int main(int argc, char **argv)
          y1 = rand_num(1,1079), x2 = rand_num(1,1919), y2 = rand_num(1,1079); //TODO: adapt to screen size
   double dx0 = 1, dx1 = 1.5, dx2 = 2;
   double dy0 = 2, dy1 = 1.5, dy2 = 1;
-  int running, login_failure = 0;
+  unsigned int running, login_failure = 0;
   
   uid = geteuid();
   pw = getpwuid(uid);
