@@ -185,6 +185,7 @@ int main(int argc, char **argv)
   int input_len;
   char user[32] = "";
   char * custom_text = "Enter Password";
+  int show_password = 0;
   register struct passwd *pw;
   register uid_t uid;
 
@@ -213,10 +214,15 @@ int main(int argc, char **argv)
 
           break;
 
+        case 'p':
+          show_password = 1;
+          break;
+
         case 'h':
           printf("Usage: %s [OPTION]\n"
                  "Lock the screen until users password is inputted\n\n"
                  "  -d        do not lock the screen, will still use screen size for triangle\n"
+                 "  -p        display the password\n"
                  "  -t [TEXT] display custom text\n"
                  "  -h        show this help\n", argv[0]);
           exit(0);
@@ -289,7 +295,16 @@ int main(int argc, char **argv)
     }
 
     cairo_move_to(ctx, 100, 100);
-    cairo_show_text(ctx, passwd_buf);
+    if (show_password)
+      cairo_show_text(ctx, passwd_buf);
+    else
+    {
+      char buf[20] = "";
+      for (int i = 0; i < strlen(passwd_buf); i++)
+        strcat(buf, "*");
+
+      cairo_show_text(ctx, buf);
+    }
 
     if (login_failure)
     {
