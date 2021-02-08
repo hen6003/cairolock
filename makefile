@@ -7,3 +7,11 @@ cairolock: cairolock.o
 
 clean:
 	rm -f cairolock *.o
+
+install: all
+	cp cairolock /usr/local/bin/
+	cp cairolock_pam /etc/pam.d/cairolock
+
+uninstall:
+	rm -f /usr/local/bin/cairolock
+	rm -f /etc/pam.d/cairolock
